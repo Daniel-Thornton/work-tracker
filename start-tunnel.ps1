@@ -1,4 +1,20 @@
 # Run this script on your home/work PC before using Work Tracker remotely.
+#
+# NOTE: double-clicking (or "Run with PowerShell") closes this window the
+# instant the script exits — including an early error — so every exit path
+# below pauses first with Read-Host to give you a chance to read it.
+
+function Pause-And-Exit([int]$code) {
+    Write-Host ""
+    Read-Host "Press Enter to close this window"
+    exit $code
+}
+
+trap {
+    Write-Host ""
+    Write-Host "ERROR: $_" -ForegroundColor Red
+    Pause-And-Exit 1
+}
 
 $model = "llama3.2"   # Change to match the model you have pulled in Ollama
 
@@ -8,7 +24,7 @@ if (-not (Get-Command "node" -ErrorAction SilentlyContinue)) {
     Write-Host "ERROR: Node.js is not installed." -ForegroundColor Red
     Write-Host "Download and install it from https://nodejs.org (LTS version)" -ForegroundColor Red
     Write-Host "Then run this script again." -ForegroundColor Red
-    exit 1
+    Pause-And-Exit 1
 }
 
 # Check cloudflared is present
@@ -19,7 +35,7 @@ if (-not (Test-Path $cloudflared)) {
     Write-Host "Download it from:" -ForegroundColor Red
     Write-Host "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/" -ForegroundColor Red
     Write-Host "and place it in: $PSScriptRoot" -ForegroundColor Red
-    exit 1
+    Pause-And-Exit 1
 }
 
 Write-Host ""
@@ -61,3 +77,7 @@ Write-Host "------------------------------------------------------------"
 Write-Host ""
 
 & $cloudflared tunnel --url http://localhost:8789
+
+Write-Host ""
+Write-Host "Tunnel closed." -ForegroundColor Yellow
+Pause-And-Exit 0
