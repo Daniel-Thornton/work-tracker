@@ -56,7 +56,7 @@ Start-Sleep -Seconds 2
 
 Write-Host "Starting Ollama..."
 $env:OLLAMA_ORIGINS = "*"
-Start-Process "ollama" -ArgumentList "serve" -WindowStyle Minimized -Environment @{ OLLAMA_ORIGINS = "*" }
+Start-Process "ollama" -ArgumentList "serve" -WindowStyle Minimized
 Start-Sleep -Seconds 3
 
 Write-Host "Pulling model if not already present..."
