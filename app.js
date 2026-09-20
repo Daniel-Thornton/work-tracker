@@ -323,7 +323,7 @@ function renderChat() {
     chatMessagesEl.innerHTML = chatMessages.map(m => `
         <div class="chat-bubble chat-${m.role}">
             <div class="chat-bubble-role">${m.role === 'user' ? 'You' : 'Assistant'}</div>
-            <div class="chat-bubble-text">${escapeHtml(m.content)}</div>
+            <div class="chat-bubble-text">${renderMarkdown(m.content)}</div>
         </div>
     `).join('');
 
@@ -372,6 +372,50 @@ function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Minimal Markdown -> HTML for chat bubbles: bold/italic, inline code,
+// fenced code blocks, links, and lists. Input is HTML-escaped before any
+// tags are introduced, so raw HTML/markup in the source text can't leak through.
+function renderMarkdown(raw) {
+    const codeBlocks = [];
+    let text = String(raw).replace(/```[^\S\n]*\w*\n?([\s\S]*?)```/g, (_, code) => {
+        codeBlocks.push(escapeHtml(code.replace(/\n$/, '')));
+        return ` CB${codeBlocks.length - 1} `;
+    });
+
+    text = escapeHtml(text);
+
+    const inlineCode = [];
+    text = text.replace(/`([^`\n]+)`/g, (_, code) => {
+        inlineCode.push(code);
+        return ` IC${inlineCode.length - 1} `;
+    });
+
+    const inlineFormat = line => line
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(.+?)__/g, '<strong>$1</strong>')
+        .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+        .replace(/(?<!\w)_([^_\n]+)_(?!\w)/g, '<em>$1</em>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    const blocks = text.split(/\n{2,}/).map(block => {
+        if (/^ CB\d+ $/.test(block.trim())) return block.trim();
+
+        const lines = block.split('\n').filter(l => l.length);
+        if (lines.length && lines.every(l => /^\s*[-*]\s+/.test(l))) {
+            return '<ul>' + lines.map(l => `<li>${inlineFormat(l.replace(/^\s*[-*]\s+/, ''))}</li>`).join('') + '</ul>';
+        }
+        if (lines.length && lines.every(l => /^\s*\d+\.\s+/.test(l))) {
+            return '<ol>' + lines.map(l => `<li>${inlineFormat(l.replace(/^\s*\d+\.\s+/, ''))}</li>`).join('') + '</ol>';
+        }
+        return `<p>${lines.map(inlineFormat).join('<br>')}</p>`;
+    });
+
+    text = blocks.join('');
+    text = text.replace(/ IC(\d+) /g, (_, i) => `<code>${inlineCode[i]}</code>`);
+    text = text.replace(/ CB(\d+) /g, (_, i) => `<pre><code>${codeBlocks[i]}</code></pre>`);
+    return text;
 }
 
 // ── Start ──

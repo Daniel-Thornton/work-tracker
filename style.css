@@ -552,8 +552,55 @@ input:focus, textarea:focus {
 
 .chat-bubble-text {
     font-size: 13px;
-    white-space: pre-wrap;
     word-break: break-word;
+}
+
+.chat-bubble-text p {
+    margin: 0 0 6px;
+}
+
+.chat-bubble-text p:last-child {
+    margin-bottom: 0;
+}
+
+.chat-bubble-text ul,
+.chat-bubble-text ol {
+    margin: 0 0 6px 18px;
+    padding: 0;
+}
+
+.chat-bubble-text ul:last-child,
+.chat-bubble-text ol:last-child {
+    margin-bottom: 0;
+}
+
+.chat-bubble-text code {
+    font-family: monospace;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.08);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.chat-bubble-text pre {
+    margin: 0 0 6px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+.chat-bubble-text pre:last-child {
+    margin-bottom: 0;
+}
+
+.chat-bubble-text pre code {
+    background: none;
+    padding: 0;
+}
+
+.chat-bubble-text a {
+    color: inherit;
 }
 
 .chat-input-row {
